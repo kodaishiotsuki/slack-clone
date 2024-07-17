@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, Lato } from "next/font/google";
-import "@/styles/globals.css";
+import { Toaster } from "sonner";
+import { Lato } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+import "@/styles/globals.css";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -10,9 +10,11 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Slack",
-  description: "Created slack clone",
+  title: "Slackzz",
+  description: "Slack clone codewithlari",
 };
+
+export const revalidate = 0;
 
 export default function RootLayout({
   children,
@@ -21,7 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={lato.className}>{children}</body>
+      <body className={lato.className}>
+        <main>{children}</main>
+        <Toaster />
+      </body>
     </html>
   );
 }

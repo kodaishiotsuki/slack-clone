@@ -1,2 +1,5 @@
 # Supabase SSR
 https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=npm
+
+# Supabase OAuth
+https://supabase.com/docs/guides/auth/server-side/oauth-with-pkce-flow-for-ssr

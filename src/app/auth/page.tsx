@@ -21,6 +21,8 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { MdOutlineAutoAwesome } from "react-icons/md";
+import { supabaseBrowserClient } from "@/supabase/supabaseClient";
+import { registerWithEmail } from "../actions/register-with-email";
 
 const AuthPage = () => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -55,27 +57,27 @@ const AuthPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // setIsAuthenticating(true);
-    // const response = await registerWithEmail(values);
-    // const { data, error } = JSON.parse(response);
-    // setIsAuthenticating(false);
-    // if (error) {
-    //   console.warn("Sign in error", error);
-    //   return;
-    // }
+    setIsAuthenticating(true);
+    const response = await registerWithEmail(values);
+    const { data, error } = JSON.parse(response);
+    setIsAuthenticating(false);
+    if (error) {
+      console.warn("Sign in error", error);
+      return;
+    }
+    console.log("Sign in success", data);
   }
 
-  // async function socialAuth(provider: Provider) {
-  //   setIsAuthenticating(true);
-  //   await supabaseBrowserClient.auth.signInWithOAuth({
-  //     provider,
-  //     options: {
-  //       redirectTo: `${location.origin}/auth/callback`,
-  //     },
-  //   });
-  //   setIsAuthenticating(false);
-  // }
+  async function socialAuth(provider: Provider) {
+    setIsAuthenticating(true);
+    await supabaseBrowserClient.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+    setIsAuthenticating(false);
+  }
 
   // if (!isMounted) return null;
 
@@ -104,7 +106,7 @@ const AuthPage = () => {
             disabled={isAuthenticating}
             variant="outline"
             className="py-6 border-2 flex space-x-3"
-            // onClick={() => socialAuth("google")}
+            onClick={() => socialAuth("google")}
           >
             <FcGoogle size={30} />
             <Typography
@@ -117,7 +119,7 @@ const AuthPage = () => {
             disabled={isAuthenticating}
             variant="outline"
             className="py-6 border-2 flex space-x-3"
-            // onClick={() => socialAuth("github")}
+            onClick={() => socialAuth("github")}
           >
             <RxGithubLogo size={30} />
             <Typography
