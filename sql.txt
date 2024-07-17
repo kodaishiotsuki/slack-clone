@@ -1,0 +1,63 @@
+-- users テーブルを作成します
+create table
+  users (
+    -- UUID 型の id を主キーとして設定し、auth.users テーブルの id に外部キー制約を付けます
+    id uuid primary key references auth.users (id) not null,
+    -- ユニークなメールアドレスを保存するためのテキスト型のカラムです
+    email text unique not null,
+    -- 名前を保存するためのテキスト型のカラムです
+    name text,
+    -- ユーザーのタイプを保存するためのテキスト型のカラムで、デフォルト値は'user'です。許可される値は 'user', 'admin', 'regulator' のいずれかです
+    type text default 'user' check (
+      type in ('user', 'admin', 'regulator')
+    ),
+    -- アバターの URL を保存するためのテキスト型のカラムです
+    avatar_url text not null,
+    -- レコード作成時のタイムスタンプを保存するためのデフォルト値付きのタイムスタンプ型のカラムです
+    created_at timestamp default current_timestamp,
+    -- ユーザーが離席中かどうかを示すブール型のカラムです。デフォルト値は false です
+    is_away boolean default false not null,
+    -- 電話番号を保存するためのテキスト型のカラムです
+    phone text,
+    -- 勤務先情報を配列で保存するためのテキスト配列型のカラムです
+    workplaces text[],
+    -- チャンネル情報を配列で保存するためのテキスト配列型のカラムです
+    channels text[]
+  );
+
+-- users テーブルに行レベルのセキュリティを有効にします
+alter table users enable row level security;
+
+-- "Can view own user data." ポリシーを users テーブルに作成します
+create policy "Can view own user data." on users for
+select
+  using (auth.uid () = id);
+
+-- "Can update own user data." ポリシーを users テーブルに作成します
+create policy "Can update own user data." on users
+for update
+  using (auth.uid () = id);
+
+-- 新しいユーザーが作成された際に呼び出される関数です
+create or replace function public.handle_new_user () returns trigger as $$
+begin
+  -- 新しいユーザーのメタデータからアバターの URL が null または空であれば、デフォルトのアバター URL を設定します
+  if new.raw_user_meta_data->>'avatar_url' is null or new.raw_user_meta_data->>'avatar_url' = '' then
+    -- jsonb_set 関数を使って、raw_user_meta_data の中にある avatar_url をデフォルトの画像 URL で設定します
+    new.raw_user_meta_data = jsonb_set(new.raw_user_meta_data, '{avatar_url}', '"https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"' ::jsonb);
+  end if;
+
+  -- 新しいユーザーの情報を users テーブルに挿入します
+  insert into public.users (id, name, type, email, avatar_url)
+  values (new.id, new.raw_user_meta_data->>'full_name', 'user', new.email, new.raw_user_meta_data->>'avatar_url');
+
+  -- トリガーの関数が実行された結果、新しい行が返されます
+  return new;
+end;
+$$ language plpgsql security definer;
+
+
+-- auth.users テーブルに新しい行が挿入された後に、public.handle_new_user() 関数を実行するトリガーを作成します
+create or replace trigger on_auth_user_created
+after insert on auth.users for each row
+execute procedure public.handle_new_user ();
