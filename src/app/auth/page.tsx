@@ -25,25 +25,23 @@ import { supabaseBrowserClient } from "@/supabase/supabaseClient";
 import { registerWithEmail } from "../actions/register-with-email";
 
 const AuthPage = () => {
+  const router = useRouter();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  const router = useRouter();
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const {
+        data: { session },
+      } = await supabaseBrowserClient.auth.getSession();
 
-  // useEffect(() => {
-  //   const getCurrUser = async () => {
-  //     const {
-  //       data: { session },
-  //     } = await supabaseBrowserClient.auth.getSession();
-
-  //     if (session) {
-  //       return router.push("/");
-  //     }
-  //   };
-
-  //   getCurrUser();
-  //   setIsMounted(true);
-  // }, [router]);
+      if (session) {
+        router.push("/");
+      }
+    };
+    getCurrentUser();
+    setIsMounted(true);
+  }, [router]);
 
   const formSchema = z.object({
     email: z.string().email().min(2, { message: "Email must be 2 characters" }),
@@ -79,7 +77,7 @@ const AuthPage = () => {
     setIsAuthenticating(false);
   }
 
-  // if (!isMounted) return null;
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen p-5 grid text-center place-content-center bg-white">
