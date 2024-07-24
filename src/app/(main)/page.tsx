@@ -1,6 +1,16 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { getUserData } from "@/actions/get-user-data";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <Button>Click me</Button>;
+export default async function Home() {
+  const userData = await getUserData();
+
+  if (!userData) {
+    return redirect("/auth");
+  }
+
+  const userWorkplaceId = userData.workspaces?.[0];
+
+  if (!userWorkplaceId) return redirect("/create-workspace");
+
+  if (userWorkplaceId) return redirect(`/workplace/${userWorkplaceId}`);
 }
