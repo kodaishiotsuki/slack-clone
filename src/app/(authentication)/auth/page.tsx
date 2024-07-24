@@ -22,7 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { MdOutlineAutoAwesome } from "react-icons/md";
 import { supabaseBrowserClient } from "@/supabase/supabaseClient";
-import { registerWithEmail } from "../actions/register-with-email";
+import { registerWithEmail } from "@/actions/register-with-email";
 
 const AuthPage = () => {
   const router = useRouter();
@@ -60,7 +60,7 @@ const AuthPage = () => {
     const { data, error } = JSON.parse(response);
     setIsAuthenticating(false);
     if (error) {
-      console.warn("Sign in error", error);
+      console.log("Sign in error", error);
       return;
     }
     console.log("Sign in success", data);
